@@ -4,14 +4,8 @@ httpProxy = require('http-proxy');
 
 
 module.exports = (req, res, proxy) ->
-  
-  unless req.headers.origin
-    console.log 'req.headers.origin not given'
-    res.write('hello https\n');
-    res.end();
-    return
-  
-    
+
+
   if req.headers['access-control-request-headers']
     headers = req.headers['access-control-request-headers']
   else
@@ -23,15 +17,15 @@ module.exports = (req, res, proxy) ->
     'access-control-max-age'           : '86400' # 24 hours
     'access-control-allow-headers'     : headers
     'access-control-allow-credentials' : 'true'
-    'access-control-allow-origin'      : req.headers.origin
-  
-  
+    'access-control-allow-origin'      : req.headers.origin || '*'
+
+
   if req.method is 'OPTIONS'
     console.log 'responding to OPTIONS request'
     res.writeHead(200, cors_headers);
     res.end();
     return
-    
+
   else
     # Handle CORS proper.
 
@@ -60,12 +54,12 @@ module.exports = (req, res, proxy) ->
       return;
 
     # console.log "proxying to #{target.host}:#{target.port}#{path}"
-    
-    
+
+
     res.setHeader(key, value) for key, value of cors_headers
-    
+
     # req.headers.host = hostname
     req.url          = path
-    
+
     # Put your custom server logic here, then proxy
     proxy.proxyRequest(req, res, target);
